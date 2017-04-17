@@ -1,0 +1,11 @@
+diff -Nurb /tmp/jstest/a/src/joystick.cpp /tmp/jstest/b/src/joystick.cpp
+--- /tmp/jstest/a/src/joystick.cpp	2009-05-09 03:38:35.000000000 +0200
++++ /tmp/jstest/b/src/joystick.cpp	2016-11-11 13:41:35.656245921 +0100
+@@ -28,6 +28,7 @@
+ #include <fcntl.h>
+ #include <string.h>
+ #include <sstream>
++#include <unistd.h>
+ #include <linux/joystick.h>
+ #include <glibmm/main.h>
+ #include <glibmm/convert.h>

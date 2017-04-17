@@ -1,0 +1,12 @@
+diff -Nurb /tmp/jstest/a/SConstruct /tmp/jstest/b/SConstruct
+--- /tmp/jstest/a/SConstruct	2009-05-09 03:38:35.000000000 +0200
++++ /tmp/jstest/b/SConstruct	2016-11-11 13:23:05.071165230 +0100
+@@ -15,7 +15,7 @@
+ ##  You should have received a copy of the GNU General Public License
+ ##  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ 
+-env = Environment(CXXFLAGS=["-g", "-Wall", "-Werror"])
++env = Environment(CXXFLAGS=["-g", "-Wall", "-Werror", "-std=c++11"])
+ env.ParseConfig('pkg-config --cflags --libs gtkmm-2.4 gtkglextmm-1.2 sigc++-2.0')
+ env.Program('jstest-gtk', [
+     'src/axis_widget.cpp',
