@@ -1,0 +1,82 @@
+# Copyright 1999-2017 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+
+EAPI="6"
+inherit readme.gentoo-r1 toolchain-funcs versionator
+
+COMPRESSTYPE=".xz"
+K_USEPV="yes"
+UNIPATCH_STRICTORDER="yes"
+K_SECURITY_UNSUPPORTED="1"
+
+CKV="$(get_version_component_range 1-2)"
+ETYPE="sources"
+inherit kernel-2
+detect_version
+K_NOSETEXTRAVERSION="don't_set_it"
+
+DESCRIPTION="Desktop-oriented Linux kernel fork that incorporates PDS CPU scheduler, graysky's GCC patch, UKSM, BFQ fixes and blk-mq performance patches"
+HOMEPAGE="https://pf.natalenko.name/"
+
+#PF_VERS="1"
+#PF_FILE="patch-${PV/_p*/}-pf${PV/*_p/}${COMPRESSTYPE}"
+#PF_URI="https://pf.natalenko.name/sources/$(get_version_component_range 1-2)/${PF_FILE}"
+PF_URI="https://github.com/pfactum/pf-kernel/compare/v${PV/_p*/}...v${PV/_p*/}-pf${PV/*_p/}.diff -> ${P}.patch"
+SRC_URI="
+	${KERNEL_URI} ${PF_URI}
+	https://dev.gentoo.org/~mpagano/genpatches/trunk/${PV/_p*/}/1500_XATTR_USER_PREFIX.patch -> ${PN}-${PV/_p*/}-1500_XATTR_USER_PREFIX.patch
+"
+
+KEYWORDS="-* ~amd64 ~ppc ~ppc64 ~x86"
+IUSE=""
+
+KV_FULL="${PVR}-pf"
+S="${WORKDIR}/linux-${KV_FULL}"
+
+DISABLE_AUTOFORMATTING="yes"
+DOC_CONTENTS="
+${P} has the following optional runtime dependencies:
+- sys-apps/tuxonice-userui: provides minimal userspace progress
+information related to suspending and resuming process.
+- sys-power/hibernate-script or sys-power/pm-utils: runtime utilities
+for hibernating and suspending your computer."
+
+pkg_pretend() {
+	# https://bugs.gentoo.org/show_bug.cgi?id=547868
+	if [[ $(gcc-version) < 4.9 ]]; then
+			eerror ""
+			eerror "${P} needs an active GCC 4.9+ compiler"
+			eerror ""
+			die "${P} needs an active sys-devel/gcc >= 4.9"
+	fi
+}
+
+pkg_setup(){
+	ewarn
+	ewarn "${PN} is *not* supported by the Gentoo Kernel Project in any way."
+	ewarn "If you need support, please contact the pf developers directly."
+	ewarn "Do *not* open bugs in Gentoo's bugzilla unless you have issues with"
+	ewarn "the ebuilds. Thank you."
+	ewarn
+	kernel-2_pkg_setup
+}
+
+src_prepare(){
+	epatch "${DISTDIR}/${P}.patch"
+	epatch "${DISTDIR}/${PN}-${PV/_p*/}-1500_XATTR_USER_PREFIX.patch" || die "Applying 1500_XATTR_USER_PREFIX.patch from gentoo-sources failed."
+
+	default
+}
+
+src_install() {
+	kernel-2_src_install
+	readme.gentoo_create_doc
+}
+
+pkg_postinst() {
+	kernel-2_pkg_postinst
+	readme.gentoo_print_elog
+}
+
+K_EXTRAEINFO="For more info on pf-sources and details on how to report problems,
+see: ${HOMEPAGE}."
