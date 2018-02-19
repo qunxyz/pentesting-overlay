@@ -1,0 +1,19 @@
+diff -uNr linux-4.15-ori/sound/pci/hda/patch_realtek.c linux-4.15/sound/pci/hda/patch_realtek.c
+--- linux-4.15-ori/sound/pci/hda/patch_realtek.c	2018-01-29 05:20:33.000000000 +0800
++++ linux-4.15/sound/pci/hda/patch_realtek.c	2018-02-19 12:06:31.411507077 +0800
+@@ -903,6 +903,7 @@
+ 	{ 0x10ec0892, 0xffff, 0x8020, "ALC661" },
+ 	{ 0x10ec0892, 0xffff, 0x8011, "ALC661" },
+ 	{ 0x10ec0892, 0xffff, 0x4011, "ALC656" },
++	{ 0x10ec0292, 0x1028, 0x05cd, "ALC3226" },
+ 	{ } /* terminator */
+ };
+ 
+@@ -911,7 +912,6 @@
+ 	{ 0x10ec0282, 0x1028, 0, "ALC3221" },
+ 	{ 0x10ec0283, 0x1028, 0, "ALC3223" },
+ 	{ 0x10ec0288, 0x1028, 0, "ALC3263" },
+-	{ 0x10ec0292, 0x1028, 0, "ALC3226" },
+ 	{ 0x10ec0293, 0x1028, 0, "ALC3235" },
+ 	{ 0x10ec0255, 0x1028, 0, "ALC3234" },
+ 	{ 0x10ec0668, 0x1028, 0, "ALC3661" },
