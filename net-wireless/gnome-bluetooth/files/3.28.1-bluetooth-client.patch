@@ -1,0 +1,50 @@
+diff -uNr gnome-bluetooth-3.28.1-ori/lib/bluetooth-client.c gnome-bluetooth-3.28.1/lib/bluetooth-client.c
+--- gnome-bluetooth-3.28.1-ori/lib/bluetooth-client.c	2018-08-29 23:06:45.708827207 +0800
++++ gnome-bluetooth-3.28.1/lib/bluetooth-client.c	2018-08-29 23:15:36.083538775 +0800
+@@ -1601,6 +1601,10 @@
+ 	GtkTreeIter iter;
+ 	GSimpleAsyncResult *simple;
+ 	GDBusProxy *device;
++	GError *error = NULL;
++	gboolean retval;
++	gchar *device_path;
++	guint times = 0;
+ 
+ 	g_return_if_fail (BLUETOOTH_IS_CLIENT (client));
+ 	g_return_if_fail (path != NULL);
+@@ -1619,10 +1623,31 @@
+ 	g_simple_async_result_set_check_cancellable (simple, cancellable);
+ 
+ 	if (connect) {
+-		device1_call_connect (DEVICE1(device),
+-				      cancellable,
+-				      (GAsyncReadyCallback) connect_callback,
+-				      simple);
++		retval = device1_call_connect_sync (DEVICE1(device),
++						      cancellable,
++						      &error);
++		while(retval == FALSE) {
++			if (times > 5) break;
++			else error = NULL;
++			retval = device1_call_connect_sync (DEVICE1(device),
++									      cancellable,
++									      &error);
++			times++;
++			sleep(2);
++		}
++
++		device_path = g_dbus_proxy_get_object_path (device);
++		if (retval == FALSE && device_path != "GDBus.Error:org.bluez.Error.InProgress") {
++			g_debug ("Connect failed for %s: %s", device_path, error->message);
++			g_simple_async_result_take_error (simple, error);
++		} else {
++			g_debug ("Connect succeeded for %s", device_path);
++			g_simple_async_result_set_op_res_gboolean (simple, retval);
++		}
++
++		g_simple_async_result_complete_in_idle (simple);
++
++		g_object_unref (simple);
+ 	} else {
+ 		device1_call_disconnect (DEVICE1(device),
+ 					 cancellable,
