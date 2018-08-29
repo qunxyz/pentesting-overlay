@@ -1,0 +1,28 @@
+diff -uNr gnome-settings-daemon-3.28.1-ori/meson.build gnome-settings-daemon-3.28.1/meson.build
+--- gnome-settings-daemon-3.28.1-ori/meson.build	2018-08-28 12:50:02.024234469 +0800
++++ gnome-settings-daemon-3.28.1/meson.build	2018-08-28 19:30:26.006006487 +0800
+@@ -135,6 +135,7 @@
+ 
+ # wacom (disabled for s390/s390x and non Linux platforms)
+ enable_wacom = host_is_linux_not_s390
++enable_wacom = get_option('wacom')
+ if enable_wacom
+   assert(enable_gudev, 'GUDev support is required for wacom support.')
+   libwacom_dep = dependency('libwacom', version: '>= 0.7')
+@@ -186,7 +187,7 @@
+ 
+ # Sharing plugin
+ enable_network_manager = get_option('network_manager')
+-assert(enable_network_manager or not host_is_linux, 'NetworkManager support is not optional on Linux platforms')
++#assert(enable_network_manager or not host_is_linux, 'NetworkManager support is not optional on Linux platforms')
+ if enable_network_manager
+   # network manager
+   libnm_dep = dependency('libnm', version: '>= 1.0')
+diff -uNr gnome-settings-daemon-3.28.1-ori/meson_options.txt gnome-settings-daemon-3.28.1/meson_options.txt
+--- gnome-settings-daemon-3.28.1-ori/meson_options.txt	2018-08-28 12:50:02.016234653 +0800
++++ gnome-settings-daemon-3.28.1/meson_options.txt	2018-08-28 19:31:10.981298194 +0800
+@@ -8,3 +8,4 @@
+ option('rfkill', type: 'boolean', value: true, description: 'build with rfkill support (not optional on Linux platforms)')
+ option('smartcard', type: 'boolean', value: true, description: 'build with smartcard support')
+ option('wayland', type: 'boolean', value: true, description: 'build with Wayland support')
++option('wacom', type: 'boolean', value: true, description: 'build with Wacom support')
