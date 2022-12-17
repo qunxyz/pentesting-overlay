@@ -1,0 +1,52 @@
+#!/sbin/openrc-run
+# Copyright 1999-2018 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+extra_commands="checkconfig"
+extra_started_commands="reload"
+
+command="/usr/bin/zcashd"
+command_args="-showmetrics=0 -conf=${ZCASHD_CONFIG} -datadir=${ZCASHD_DATADIR} ${ZCASHD_OPTS}"
+command_user="${ZCASHD_UG}"
+command_background=true
+pidfile="/run/${RC_SVCNAME}.pid"
+retry="${ZCASHD_SIGTERM_TIMEOUT}"
+required_files="${ZCASHD_CONFIG}"
+start_stop_daemon_args="${SSD_OPTS:--N ${ZCASHD_NICE} -w 2000}"
+
+depend() {
+	need localmount net
+}
+
+start_pre() {
+	checkpath -d -m 0750 -o "${ZCASHD_UG}" "${ZCASHD_DATADIR}"
+	checkpath -f -m 0600 -o "${ZCASHD_UG}" "${ZCASHD_CONFIG}"
+
+	if [ "${RC_CMD}" != "restart" ]; then
+		checkconfig || return 1
+	fi
+}
+
+reload() {
+	checkconfig || return 1
+	ebegin "Reloading ${RC_SVCNAME}"
+	start-stop-daemon --signal HUP --pidfile "${pidfile}"
+	eend $? "Failed to reload ${RC_SVCNAME}"
+}
+
+checkconfig() {
+	if ! grep -qs '^rpcpassword=' "${ZCASHD_CONFIG}"; then
+		eerror
+		eerror "ERROR: You must set a secure rpcpassword to run zcashd."
+		eerror "The setting must appear in ${ZCASHD_CONFIG}"
+		eerror
+		eerror "This password is security critical to securing wallets "
+		eerror "and must not be the same as the rpcuser setting."
+		eerror "You can generate a suitable random password using the following"
+		eerror "command from the shell:"
+		eerror
+		eerror "bash -c 'tr -dc a-zA-Z0-9 < /dev/urandom | head -c32 && echo'"
+		eerror
+		return 1
+	fi
+}

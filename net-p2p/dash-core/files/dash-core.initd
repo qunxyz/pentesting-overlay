@@ -1,0 +1,52 @@
+#!/sbin/openrc-run
+# Copyright 1999-2018 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+extra_commands="checkconfig"
+extra_started_commands="reload"
+
+command="/usr/bin/dashd"
+command_args="-daemon=0 -conf=${DASHD_CONFIG} -datadir=${DASHD_DATADIR} ${DASHD_OPTS}"
+command_user="${DASHD_UG}"
+command_background=true
+pidfile="/run/${RC_SVCNAME}.pid"
+retry="${DASHD_SIGTERM_TIMEOUT}"
+required_files="${DASHD_CONFIG}"
+start_stop_daemon_args="${SSD_OPTS:--N ${DASHD_NICE} -w 2000}"
+
+depend() {
+	need localmount net
+}
+
+start_pre() {
+	checkpath -d -m 0750 -o "${DASHD_UG}" "${DASHD_DATADIR}"
+	checkpath -f -m 0600 -o "${DASHD_UG}" "${DASHD_CONFIGFILE}"
+
+	if [ "${RC_CMD}" != "restart" ]; then
+		checkconfig || return 1
+	fi
+}
+
+reload() {
+	checkconfig || return 1
+	ebegin "Reloading ${RC_SVCNAME}"
+	start-stop-daemon --signal HUP --pidfile "${pidfile}"
+	eend $? "Failed to reload ${RC_SVCNAME}"
+}
+
+checkconfig() {
+	if ! grep -qs '^rpcpassword=' "${DASHD_CONFIGFILE}"; then
+		eerror
+		eerror "ERROR: You must set a secure rpcpassword to run dashd."
+		eerror "The setting must appear in ${DASHD_CONFIGFILE}"
+		eerror
+		eerror "This password is security critical to securing wallets "
+		eerror "and must not be the same as the rpcuser setting."
+		eerror "You can generate a suitable random password using the following"
+		eerror "command from the shell:"
+		eerror
+		eerror "bash -c 'tr -dc a-zA-Z0-9 < /dev/urandom | head -c32 && echo'"
+		eerror
+		return 1
+	fi
+}
